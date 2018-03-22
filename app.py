@@ -63,10 +63,23 @@ def messages():
 
 	return jsonify(resp)
 
-@app.route('/conversations/<conversation_id>', methods=['GET', 'POST'])
+@app.route('/conversations/<conversation_id>')
 def conversations(conversation_id):
 
-	return "jsonify"
+	resp = {"successful": False, "message": "Usage: correct conversation_id"}
+
+	query = {"id": conversation_id}
+
+	result = table.find_one(query)
+	print "result", result
+
+	if result is not None:
+		obj = {"id": result['id'], "messages": result['messages']} #_id field is not serializable
+		resp['message'] = obj
+		resp['successful'] = True
+
+
+	return jsonify(resp)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0',port=4000)
