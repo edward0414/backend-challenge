@@ -8,7 +8,7 @@ from pymongo import MongoClient
 # create the application object
 app = Flask(__name__)
 
-#it would be a better idea to save the credentials as environmental secret keys
+#it would be a better idea to save the credentials as environmental secret keys for better security!
 client = MongoClient('mongodb://edward:123456@ds147377.mlab.com:47377/ada_challenge') 
 
 db = client['ada_challenge']
@@ -23,7 +23,6 @@ table = db['conversations']
 #-Get to /conversations/<conversation_id>
 #	-> validating incoming id
 #	-> query the db
-#-Some test cases
 
 
 @app.route('/messages', methods=['GET', 'POST'])
@@ -70,7 +69,7 @@ def conversations(conversation_id):
 	query = {"id": conversation_id}
 
 	result = table.find_one(query)
-	print "result", result
+	print "result: ", result
 
 	if result is not None:
 		obj = {"id": result['id'], "messages": result['messages']} #_id field is not serializable
