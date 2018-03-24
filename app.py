@@ -1,21 +1,21 @@
-#use flask
-#use mongodb
+#use Flask framework
+#use mongodb as Database
 #set up the environment using anaconda
-from flask import Flask, flash, redirect, render_template, request, session, url_for, jsonify, make_response
+from flask import Flask, request, jsonify
 from datetime import datetime
 from pymongo import MongoClient
 
 # create the application object
 app = Flask(__name__)
 
-client = MongoClient('mongodb://edward:123456@ds147377.mlab.com:47377/ada_challenge')
+#it would be a better idea to save the credentials as environmental secret keys
+client = MongoClient('mongodb://edward:123456@ds147377.mlab.com:47377/ada_challenge') 
+
 db = client['ada_challenge']
 
 table = db['conversations']
 
 
-
-# * request.get_json()
 #To-Do:
 #-Post to /messages (sender, conversation_id, message)
 #	-> validating incoming data (check if its the right format)
@@ -37,24 +37,23 @@ def messages():
 			resp["successful"] = True
 
 			msg = {
-			"sender": request.args['sender'],
-			"message": request.args['message'],
-			"created": datetime.utcnow()
+				"sender": request.args['sender'],
+				"message": request.args['message'],
+				"created": datetime.utcnow()
 			}
 
 			resp["message"] = msg
 
 			query = {"id": request.args['conversation_id']}
 			result = table.find_one(query)
-			print "result", result
 
 			if result is None:
-				print "here"
 				conv = {
-				"id": request.args['conversation_id'], 
-				"messages":[
-					msg
-				]}
+					"id": request.args['conversation_id'], 
+					"messages":[
+						msg
+					]
+				}
 				table.insert_one(conv)
 
 			else:
