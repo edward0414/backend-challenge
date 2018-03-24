@@ -65,7 +65,7 @@ def messages():
 @app.route('/conversations/<conversation_id>')
 def conversations(conversation_id):
 
-	resp = {"successful": False, "message": "Usage: correct conversation_id"}
+	resp = {"id": conversation_id, "messages": "Error: No conversation has started with this id!"}
 
 	query = {"id": conversation_id}
 
@@ -73,9 +73,7 @@ def conversations(conversation_id):
 	print "result: ", result
 
 	if result is not None:
-		obj = {"id": result['id'], "messages": result['messages']} #_id field is not serializable
-		resp['message'] = obj
-		resp['successful'] = True
+		resp['messages'] = result['messages']
 
 
 	return jsonify(resp)
