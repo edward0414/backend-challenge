@@ -9,6 +9,7 @@ from pymongo import MongoClient
 app = Flask(__name__)
 
 #it would be a better idea to save the credentials as environmental secret keys for better security!
+#but since this is a small challenge, I will not do that...
 client = MongoClient('mongodb://edward:123456@ds147377.mlab.com:47377/ada_challenge') 
 
 db = client['ada_challenge']
