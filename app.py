@@ -9,7 +9,7 @@ from pymongo import MongoClient
 app = Flask(__name__)
 
 #it would be a better idea to save the credentials as environmental secret keys for better security!
-#but since this is a small challenge, I will not do that...
+#but just for the person to run the code, i will leave it as this
 client = MongoClient('mongodb://edward:123456@ds147377.mlab.com:47377/ada_challenge') 
 
 db = client['ada_challenge']
@@ -60,10 +60,15 @@ def messages():
 				result['messages'].append(msg)
 				table.update(query, {'$set': {"messages": result['messages']}})
 
-	return jsonify(resp)
+	resp = jsonify(resp)
+	resp.status_code = 201
+
+	return resp
 
 @app.route('/conversations/<conversation_id>')
 def conversations(conversation_id):
+
+	conversation_id = str(conversation_id) #to cover the case where the user throw in an integer
 
 	resp = {"id": conversation_id, "messages": "Error: No conversation has started with this id!"}
 
@@ -74,9 +79,13 @@ def conversations(conversation_id):
 
 	if result is not None:
 		resp['messages'] = result['messages']
+		return jsonify(resp)
 
+	else:
+		resp = jsonify(resp)
+		resp.status_code = 404
 
-	return jsonify(resp)
+		return resp
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0',port=4000)
