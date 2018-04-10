@@ -29,8 +29,10 @@ table = db['conversations']
 @app.route('/messages', methods=['GET', 'POST'])
 def messages():
 
+
 	resp = {"successful": False, "message": "Usage: sender, conversation_id, message"}
-	
+	processed = False
+
 	if request.method == 'POST':
 
 		if "sender" in request.args and "conversation_id" in request.args and "message" in request.args:
@@ -60,8 +62,15 @@ def messages():
 				result['messages'].append(msg)
 				table.update(query, {'$set': {"messages": result['messages']}})
 
+			processed = True
+
+
 	resp = jsonify(resp)
-	resp.status_code = 201
+
+	if processed:
+		resp.status_code = 201
+	else:
+		resp.status_code = 400
 
 	return resp
 
@@ -75,7 +84,6 @@ def conversations(conversation_id):
 	query = {"id": conversation_id}
 
 	result = table.find_one(query)
-	print "result: ", result
 
 	if result is not None:
 		resp['messages'] = result['messages']

@@ -10,6 +10,17 @@ Then the server will be up and running on the localhost port 4000.
 The two endpoints "/messages" and "/conversations/<conversation_id>" will be available for services. Use them according to the readMe file!
 
 
+### Test
+
+Similar to how to run the main app.py file, run the command "python test.py" to test the endpoints.
+
+Test cover:
+1) correct behaviour of /conversations endpoint
+2) incorrect behaviour of /conversations endpoint
+3) correct behaviour of /messages endpoint
+4) incorrect behaviour of /messages endpoint
+4) correct process of creating a new conversation
+
 
 ### Database
 
