@@ -1,7 +1,7 @@
 #use Flask framework
 #use mongodb as Database
 #set up the environment using anaconda
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, json
 from datetime import datetime
 from pymongo import MongoClient
 
@@ -33,25 +33,26 @@ def messages():
 	resp = {"successful": False, "message": "Usage: sender, conversation_id, message"}
 	processed = False
 
+	data = request.get_json()
+
 	if request.method == 'POST':
 
-		if "sender" in request.args and "conversation_id" in request.args and "message" in request.args:
-			resp["successful"] = True
+		if "sender" in data and "conversation_id" in data and "message" in data:
 
 			msg = {
-				"sender": request.args['sender'],
-				"message": request.args['message'],
+				"sender": data['sender'],
+				"message": data['message'],
 				"created": datetime.utcnow()
 			}
 
 			resp["message"] = msg
 
-			query = {"id": request.args['conversation_id']}
+			query = {"id": data['conversation_id']}
 			result = table.find_one(query)
 
 			if result is None:
 				conv = {
-					"id": request.args['conversation_id'], 
+					"id": data['conversation_id'], 
 					"messages":[
 						msg
 					]
@@ -62,6 +63,7 @@ def messages():
 				result['messages'].append(msg)
 				table.update(query, {'$set': {"messages": result['messages']}})
 
+			resp["successful"] = True
 			processed = True
 
 

@@ -1,13 +1,10 @@
 from app import app
-from flask import json
+from flask import json, jsonify
 from random import randint 
 import unittest
 
 
 class FlaskTestCase(unittest.TestCase):
-
-	def create_messages_post_url(self, convo_id, sender,msg):
-		return '/messages?conversation_id=' + str(convo_id) + '&sender=' + str(sender) +'&message=' + str(msg)
 
 	#Test conversations endpoint correct behaviour
 	def test_conversations_correct(self):
@@ -30,7 +27,8 @@ class FlaskTestCase(unittest.TestCase):
 	#Test messages endpoint correct behaviour
 	def test_messages_correct(self):
 		tester = app.test_client(self)
-		resp = tester.post(self.create_messages_post_url("1234", "edward", "knock knock!"))
+		req = {"conversation_id": "1234","message": "knock knock!", "sender": "edward"}
+		resp = tester.post('/messages', data=json.dumps(req), content_type='application/json')
 		data = json.loads(resp.data)
 		self.assertEqual(resp.status_code, 201)
 		self.assertTrue(data['successful'])
@@ -41,7 +39,8 @@ class FlaskTestCase(unittest.TestCase):
 	#Test messages endpoint incorrect behaviour
 	def test_messages_incorrect(self):
 		tester = app.test_client(self)
-		resp = tester.post('/messages?conversation_id=1234&sender=edward')
+		req = {"conversation_id": "1234", "sender": "edward"}
+		resp = tester.post('/messages', data=json.dumps(req), content_type='application/json')
 		self.assertEqual(resp.status_code, 400)
 		data = json.loads(resp.data)
 		self.assertEqual(data["successful"], False)
@@ -53,7 +52,8 @@ class FlaskTestCase(unittest.TestCase):
 		#start a new conversation
 		x = randint(1, 9999) #theres a good chance this id hasnt been used
 		x = str(x)
-		resp = tester.post(self.create_messages_post_url(x, "Edward", "Hello ShiHan!"))
+		req = {"conversation_id": x,"message": "Hello ShiHan!", "sender": "Edward"}
+		resp = tester.post('/messages', data=json.dumps(req), content_type='application/json')
 		data = json.loads(resp.data)
 		self.assertEqual(resp.status_code, 201)
 		self.assertTrue(data['successful'])
