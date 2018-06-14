@@ -16,10 +16,12 @@ Similar to how to run the main app.py file, run the command "python test.py" to 
 
 Test cover:
 1) correct behaviour of /conversations endpoint
-2) incorrect behaviour of /conversations endpoint
-3) correct behaviour of /messages endpoint
-4) incorrect behaviour of /messages endpoint
-4) correct process of creating a new conversation
+2) incorrect behaviour of /conversations endpoint: not used conversation_id
+3) incorrect behaviour of /conversations endpoint: incorrect parameter
+4) correct behaviour of /messages endpoint
+5) incorrect behaviour of /messages endpoint: missing field
+6) incorrect behaviour of /messages endpoint: invalid conversation_id
+7) correct process of creating a new conversation
 
 
 ### Database
