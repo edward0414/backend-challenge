@@ -4,6 +4,8 @@
 from flask import Flask, request, jsonify, json
 from datetime import datetime
 from pymongo import MongoClient
+from schema import PostMsgSchema
+from marshmallow import ValidationError
 
 # create the application object
 app = Flask(__name__)
@@ -26,60 +28,66 @@ table = db['conversations']
 #	-> query the db
 
 
-@app.route('/messages', methods=['GET', 'POST'])
+@app.route('/messages', methods=['POST'])
 def messages():
+    
+    resp = {"successful": False, "message": "Usage: sender, conversation_id, message"}
+    
+    data = request.get_json()
+    
+    try:
+        PostMsgSchema().load(data)
+        _ = int(data["conversation_id"])
+        
+    except ValidationError as err:
+        resp["message"] = err.messages
+        resp = jsonify(resp)
+        resp.status_code = 400
+        return resp
+    
+    except ValueError as e:
+        resp["message"] = "Invalid conversation_id (string of an integer)"
+        resp = jsonify(resp)
+        resp.status_code = 400
+        return resp
+
+    msg = {
+        "sender": data['sender'],
+        "message": data['message'],
+        "created": datetime.utcnow()
+    }
+
+    resp["message"] = msg
+
+    query = {"id": data['conversation_id']}
+    result = table.find_one(query)
+
+    if not result:
+        conv = {
+            "id": data['conversation_id'], 
+            "messages":[
+                msg
+            ]
+        }
+        table.insert_one(conv)
+
+    else:
+        result['messages'].append(msg)
+        table.update(query, {'$set': {"messages": result['messages']}})
+
+    resp["successful"] = True
+    
+    resp = jsonify(resp)
+    
+    resp.status_code = 201
+    
+    return resp
 
 
-	resp = {"successful": False, "message": "Usage: sender, conversation_id, message"}
-	processed = False
-
-	data = request.get_json()
-
-	if request.method == 'POST':
-
-		if "sender" in data and "conversation_id" in data and "message" in data:
-
-			msg = {
-				"sender": data['sender'],
-				"message": data['message'],
-				"created": datetime.utcnow()
-			}
-
-			resp["message"] = msg
-
-			query = {"id": data['conversation_id']}
-			result = table.find_one(query)
-
-			if result is None:
-				conv = {
-					"id": data['conversation_id'], 
-					"messages":[
-						msg
-					]
-				}
-				table.insert_one(conv)
-
-			else:
-				result['messages'].append(msg)
-				table.update(query, {'$set': {"messages": result['messages']}})
-
-			resp["successful"] = True
-			processed = True
-
-
-	resp = jsonify(resp)
-
-	if processed:
-		resp.status_code = 201
-	else:
-		resp.status_code = 400
-
-	return resp
-
-@app.route('/conversations/<conversation_id>')
+@app.route('/conversations/<int:conversation_id>')
 def conversations(conversation_id):
 
-	conversation_id = str(conversation_id) #to cover the case where the user throw in an integer
+	conversation_id = str(conversation_id)
 
 	resp = {"id": conversation_id, "messages": "Error: No conversation has started with this id!"}
 

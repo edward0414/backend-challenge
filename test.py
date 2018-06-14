@@ -14,7 +14,7 @@ class FlaskTestCase(unittest.TestCase):
 		data = json.loads(resp.data)
 		self.assertEqual(data['id'], '1234')
 
-	#Test conversations endpoint incorrect behaviour
+	#Test conversations endpoint incorrect behaviour: not used conversation_id
 	def test_conversations_incorrect(self):
 		tester = app.test_client(self)
 		resp = tester.get('/conversations/234') # This conversation_id has not been used.
@@ -22,6 +22,12 @@ class FlaskTestCase(unittest.TestCase):
 		data = json.loads(resp.data)
 		self.assertEqual(data['id'], '234')
 		self.assertEqual(data['messages'], "Error: No conversation has started with this id!")
+
+	#Test conversations endpoint incorrect behaviour: incorrect parameter
+	def test_conversations_incorrect2(self):
+		tester = app.test_client(self)
+		resp = tester.get('/conversations/a234') 
+		self.assertEqual(resp.status_code, 404)
 
 
 	#Test messages endpoint correct behaviour
@@ -36,10 +42,19 @@ class FlaskTestCase(unittest.TestCase):
 		self.assertEqual(data['message']["message"], "knock knock!")
 
 
-	#Test messages endpoint incorrect behaviour
+	#Test messages endpoint incorrect behaviour: missing fields
 	def test_messages_incorrect(self):
 		tester = app.test_client(self)
 		req = {"conversation_id": "1234", "sender": "edward"}
+		resp = tester.post('/messages', data=json.dumps(req), content_type='application/json')
+		self.assertEqual(resp.status_code, 400)
+		data = json.loads(resp.data)
+		self.assertEqual(data["successful"], False)
+
+	#Test messages endpoint incorrect behaviour: invalid id
+	def test_messages_incorrect2(self):
+		tester = app.test_client(self)
+		req = {"conversation_id": "a1234", "sender": "edward", "message": "hi"}
 		resp = tester.post('/messages', data=json.dumps(req), content_type='application/json')
 		self.assertEqual(resp.status_code, 400)
 		data = json.loads(resp.data)
